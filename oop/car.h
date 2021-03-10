@@ -1,4 +1,5 @@
 #include <string>
+#include <memory>
 
 namespace oop {
 	class car {
@@ -19,6 +20,8 @@ namespace oop {
 		}
 		virtual std::string Type() = 0;
 		virtual std::string CarString() = 0;
+		// static member-function (factory)
+		static std::unique_ptr<car> create_car(std::string make, std::string model, int year, std::string type);
 
 	protected:
 		std::string make;
