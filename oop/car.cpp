@@ -1,5 +1,6 @@
 #include "car.h"
 #include <iostream>
+#include <cassert>
 
 using namespace oop;
 
@@ -13,7 +14,9 @@ using namespace oop;
 		c1 = new sedan("Honda","Civic",2020);
 		c2 = new pickup("Ford","F150",2021,5000);
 		p3 = new pickup("Ford","F150",2021,5000);
-		p2 = (pickup*)(c2); // explicit downcast
+		// p2 = (pickup*)(c2); // explicit downcast
+		p2 = dynamic_cast<pickup*>(c2); // safe downcast
+		assert(p2); // dynamic_cast will return nullptr if the cast is not possible
 
 		std::cout << c1->CarString() << std::endl << std::endl;
 
