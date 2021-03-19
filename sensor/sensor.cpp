@@ -4,13 +4,22 @@
 #include <ctime>
 #include <memory>
 #include <mutex>
+#include <csignal>
 
 std::mutex sensor::i2c_sensor_read_mutex;
+std::vector<std::unique_ptr<sensor>> sensor_list;
+
+static void shutdown_handler(int signal)
+{
+	for (auto & s : sensor_list)
+	{
+		s->shutdown();
+	}
+}
 
 int main() {
 	time_t t;
 	srand((unsigned) time(&t));
-	std::vector<std::unique_ptr<sensor>> sensor_list;
 	std::unique_ptr<sensor> p1(new sensor(t));
 	std::unique_ptr<sensor> p2(new sensor(t));
 	std::unique_ptr<sensor> p3(new sensor(t));
@@ -23,14 +32,13 @@ int main() {
 		s->start();
 	}
 
-	//// stop threads
-	for (auto & s : sensor_list) {
-		s->stop();
-	}
+	signal(SIGINT, shutdown_handler);
+	signal(SIGTERM, shutdown_handler);
+	signal(SIGPIPE, SIG_IGN);
 
-	//// stop threads
+	// wait on threads
 	for (auto & s : sensor_list) {
-		std::cout << "temp reading: " << s->get_temp() << std::endl;
+		s->wait();
 	}
 
 	return 0;

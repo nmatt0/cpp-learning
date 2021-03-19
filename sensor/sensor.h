@@ -2,6 +2,7 @@
 #include <mutex>
 #include <chrono>
 #include <cassert>
+#include <iostream>
 
 
 class sensor {
@@ -13,17 +14,16 @@ public:
 
 	virtual ~sensor() = default;
 
-    sensor(const sensor & other) : sensor_t(other.sensor_t), temp(other.temp), rand_seed(other.rand_seed)
-	{
-	}
-
 	void reading_thread()
 	{
+		while(!should_stop)
 		{
 			std::unique_lock<std::mutex> lock(i2c_sensor_read_mutex);
 			// this simulates a read from the i2c sensor
 			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			temp = rand() % 100;
+			std::cout << "temp : " << temp << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 	}
 
@@ -33,8 +33,13 @@ public:
 		sensor_t = new std::thread(&sensor::reading_thread, this);
 	}
 
-	void stop()
-    {
+	void shutdown()
+	{
+		should_stop = true;
+	}
+
+	void wait()
+	{
 		assert(sensor_t);
 		sensor_t->join();
 		delete (sensor_t);
@@ -46,6 +51,7 @@ public:
 	}
 
 private:
+	bool should_stop = false;
 	int temp = 0;
 	time_t rand_seed;
 	std::thread * sensor_t = nullptr;
