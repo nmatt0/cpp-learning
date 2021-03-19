@@ -1,22 +1,24 @@
 #include <thread>
 #include <mutex>
-#include <ctime>
 #include <chrono>
 #include <cassert>
 
-std::mutex i2c_sensor_read_mutex;
 
 class sensor {
 public:
 
-	sensor() {
+	sensor(time_t seed) : rand_seed(seed)
+    {
 	}
 
 	virtual ~sensor() = default;
 
-	void reading_thread() {
-		srand((unsigned) time(0));
-		
+    sensor(const sensor & other) : sensor_t(other.sensor_t), temp(other.temp), rand_seed(other.rand_seed)
+	{
+	}
+
+	void reading_thread()
+	{
 		{
 			std::unique_lock<std::mutex> lock(i2c_sensor_read_mutex);
 			// this simulates a read from the i2c sensor
@@ -25,12 +27,14 @@ public:
 		}
 	}
 
-	void start() {
+	void start()
+    {
 		assert(!sensor_t);
 		sensor_t = new std::thread(&sensor::reading_thread, this);
 	}
 
-	void stop() {
+	void stop()
+    {
 		assert(sensor_t);
 		sensor_t->join();
 		delete (sensor_t);
@@ -41,8 +45,9 @@ public:
 		return temp;
 	}
 
-	
 private:
 	int temp = 0;
+	time_t rand_seed;
 	std::thread * sensor_t = nullptr;
+    static std::mutex i2c_sensor_read_mutex; // mutex shared between all threads
 };
