@@ -7,7 +7,7 @@
 #include <csignal>
 
 std::mutex sensor::i2c_sensor_read_mutex;
-std::vector<std::unique_ptr<sensor>> sensor_list;
+std::vector<sensor*> sensor_list;
 
 static void shutdown_handler(int signal)
 {
@@ -20,13 +20,10 @@ static void shutdown_handler(int signal)
 int main() {
 	time_t t;
 	srand((unsigned) time(&t));
-
-	std::unique_ptr<sensor> p1(new sensor(t,1));
-	std::unique_ptr<sensor> p2(new sensor(t,2));
-	std::unique_ptr<sensor> p3(new sensor(t,3));
-	sensor_list.push_back(std::move(p1));
-	sensor_list.push_back(std::move(p2));
-	sensor_list.push_back(std::move(p3));
+	
+	sensor_list.push_back(new sensor(t,1));
+	sensor_list.push_back(new sensor(t,2));
+	sensor_list.push_back(new sensor(t,3));
 	
 	// start threads
 	for (auto & s : sensor_list) {
