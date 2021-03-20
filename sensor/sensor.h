@@ -49,6 +49,7 @@ public:
 	}
 
 	int get_temp() {
+		std::unique_lock<std::mutex> lock(i2c_sensor_read_mutex); // lock on return temp
 		return temp;
 	}
 
