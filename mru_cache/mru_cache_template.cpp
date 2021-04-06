@@ -11,6 +11,11 @@ public:
     {
     }
 
+    int size()
+    {
+        return m_map.size();
+    }
+
     void add(const K key, const V value)
     {
         auto map_iter = m_map.find(key);
@@ -106,22 +111,20 @@ private:
 
 int main()
 {
-    mru_cache<int,std::string> c(10);
+    mru_cache<int,std::string> c(5);
     c.add(1,"test1");
     c.add(2,"test2");
     c.add(3,"test3");
     c.add(4,"test4");
     c.add(5,"test5");
     c.add(6,"test6");
+    std::cout << "cache size: " << c.size() << std::endl;
     c.printListKeys();
     c.erase(4);
     c.printListKeys();
-    std::string try1;
-    c.trygetvalue(1,try1);
-    std::cout << "got value: " << try1 << std::endl;
+    std::string try2;
+    c.trygetvalue(2,try2);
+    std::cout << "got value: " << try2 << std::endl;
     c.printListKeys();
-    std::string try11;
-    c.trygetvalue(1,try11);
-    std::cout << "got value: " << try11 << std::endl;
     return 0;
 }
