@@ -21,6 +21,10 @@ void thread_pool::run()
             std::unique_lock<std::mutex> lk(mutex);
             while (work_queue.empty())
             {
+                if (pool_closed)
+                {
+                    return;
+                }
                 cond.wait(lk);
                 if (should_shutdown)
                 {
