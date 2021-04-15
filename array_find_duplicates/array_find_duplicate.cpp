@@ -4,10 +4,10 @@
 
 template <typename T>
 
-bool duplicate(std::vector<T> & v)
+bool duplicate(const std::vector<T> & v)
 {
     std::unordered_set<T> s;
-    for (auto i : v)
+    for (auto & i : v)
     {
         auto item = s.find(i);
         if (item != s.end())
