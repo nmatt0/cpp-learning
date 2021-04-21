@@ -12,6 +12,14 @@ thread_pool::thread_pool(int size) : m_size(size)
 {
 }
 
+thread_pool::~thread_pool()
+{
+    for (std::thread * t : thread_list)
+    {
+        delete(t);
+    }
+}
+
 void thread_pool::run()
 {
     while(!should_shutdown)
@@ -21,11 +29,7 @@ void thread_pool::run()
             std::unique_lock<std::mutex> lk(mutex);
             while (work_queue.empty())
             {
-                if (pool_closed)
-                {
-                    return;
-                }
-                cond.wait(lk);
+                cond_queue.wait(lk);
                 if (should_shutdown)
                 {
                     return;
@@ -33,7 +37,7 @@ void thread_pool::run()
             }
             job = work_queue.front();
             work_queue.pop();
-            cond.notify_all();
+            cond_drain.notify_one();
         }
         job();
     }
@@ -51,8 +55,9 @@ void thread_pool::start()
 
 void thread_pool::stop()
 {
+    std::unique_lock<std::mutex> lk(mutex);
     should_shutdown = true;
-    cond.notify_all();
+    cond_queue.notify_all();
 }
 
 void thread_pool::wait()
@@ -66,23 +71,21 @@ void thread_pool::wait()
 // let existing work finish but don't accept new work
 void thread_pool::drain()
 {
-    pool_closed = true;
     std::unique_lock<std::mutex> lk(mutex);
+    pool_closed = true;
     while (!work_queue.empty())
     {
-        cond.wait(lk);
+        cond_drain.wait(lk);
     }
-    should_shutdown = true;
-    
 }
 
 void thread_pool::queue_work(work_element work)
 {
+    std::unique_lock<std::mutex> lk(mutex);
     if (pool_closed)
     {
         return;
     }
-    std::unique_lock<std::mutex> lk(mutex);
     work_queue.push(work);
-    cond.notify_one();
+    cond_queue.notify_one();
 }

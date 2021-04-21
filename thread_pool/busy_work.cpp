@@ -18,6 +18,7 @@ int main()
             busy_work();
         });
     }
-    tp.drain(); // alternative to tp.stop()
+    tp.drain();
+    tp.stop();
     tp.wait();
 }

@@ -10,6 +10,7 @@ public:
     typedef std::function<void()> work_element;
 
     thread_pool(int size);
+    ~thread_pool();
 
     void run();
     void start();
@@ -26,5 +27,6 @@ private:
     bool should_shutdown = false;
     bool pool_closed = false;
     std::mutex mutex;
-    std::condition_variable cond;
+    std::condition_variable cond_queue;
+    std::condition_variable cond_drain;
 };
